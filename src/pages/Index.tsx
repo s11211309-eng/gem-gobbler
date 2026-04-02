@@ -1,16 +1,21 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState, useCallback } from 'react';
+import StartScreen from '@/components/game/StartScreen';
+import GameCanvas from '@/components/game/GameCanvas';
+import type { GameScreen } from '@/components/game/types';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
-  return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
-    </div>
-  );
+const Index = () => {
+  const [screen, setScreen] = useState<GameScreen>('start');
+
+  const handleStart = useCallback(() => setScreen('playing'), []);
+  const handleGameOver = useCallback(() => {
+    // game over is handled inside GameCanvas with overlay
+  }, []);
+
+  if (screen === 'start') {
+    return <StartScreen onStart={handleStart} />;
+  }
+
+  return <GameCanvas onGameOver={handleGameOver} />;
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
