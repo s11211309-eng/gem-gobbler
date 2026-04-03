@@ -7,6 +7,9 @@ const StartScreen = ({ onStart }: StartScreenProps) => (
     <h1 className="text-6xl font-black text-game-title mb-2 tracking-tighter drop-shadow-lg">
       無境求生
     </h1>
+    <h2 className="text-xl font-bold text-game-muted mb-12 tracking-wide opacity-60">
+      在無盡的世界中活下去
+    </h2>
     <button
       onClick={onStart}
       className="px-12 py-4 bg-game-accent text-game-bg font-bold text-xl rounded-lg hover:brightness-110 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-game-accent/30"
