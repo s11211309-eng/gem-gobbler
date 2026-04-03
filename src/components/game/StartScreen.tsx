@@ -5,10 +5,10 @@ interface StartScreenProps {
 const StartScreen = ({ onStart }: StartScreenProps) => (
   <div className="flex flex-col items-center justify-center min-h-screen bg-game-bg">
     <h1 className="text-6xl font-black text-game-title mb-2 tracking-tighter drop-shadow-lg">
-      無盡畫布
+      無境求生
     </h1>
-    <h2 className="text-3xl font-bold text-game-subtitle mb-12 tracking-wide">
-      生存者
+    <h2 className="text-xl font-bold text-game-muted mb-12 tracking-wide opacity-60">
+      在無盡的世界中活下去
     </h2>
     <button
       onClick={onStart}
