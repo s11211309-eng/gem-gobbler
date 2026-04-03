@@ -3,6 +3,8 @@ import type { GameState, Upgrade, Enemy, Projectile, XpGem } from './types';
 import GameHUD from './GameHUD';
 import LevelUpModal from './LevelUpModal';
 import GameOverScreen from './GameOverScreen';
+import VirtualJoystick from './VirtualJoystick';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ALL_UPGRADES: Omit<Upgrade, 'apply'>[] = [
   { id: 'damage', name: '+ Damage', description: 'Increase projectile damage by 5', icon: '⚔️' },
