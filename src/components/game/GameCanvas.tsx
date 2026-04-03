@@ -133,7 +133,7 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
       const H = canvas.height;
 
       if (gs.paused || gs.gameOver) {
-        render(ctx, gs, W, H, timestamp);
+        render(ctx, gs, W, H, timestamp, playerName);
         return;
       }
 
