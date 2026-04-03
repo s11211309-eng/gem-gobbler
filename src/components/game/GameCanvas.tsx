@@ -310,7 +310,7 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
   );
 };
 
-function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number) {
+function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number, playerName: string) {
   const p = gs.player;
   // Camera offset: player is always at center of screen
   const camX = p.x - W / 2;
