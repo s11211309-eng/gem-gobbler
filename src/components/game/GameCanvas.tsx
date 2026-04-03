@@ -59,6 +59,12 @@ const GameCanvas = ({ onGameOver }: Props) => {
   const animRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const virtualInputRef = useRef({ dx: 0, dy: 0 });
+  const isMobile = useIsMobile();
+
+  const handleJoystickMove = useCallback((dx: number, dy: number) => {
+    virtualInputRef.current = { dx, dy };
+  }, []);
 
   const [hudData, setHudData] = useState({ hp: 100, maxHp: 100, xp: 0, xpToLevel: 20, level: 1, time: 0 });
   const [levelUpOptions, setLevelUpOptions] = useState<Upgrade[] | null>(null);
