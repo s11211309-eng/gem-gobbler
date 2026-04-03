@@ -3,6 +3,8 @@ import type { GameState, Upgrade, Enemy, Projectile, XpGem } from './types';
 import GameHUD from './GameHUD';
 import LevelUpModal from './LevelUpModal';
 import GameOverScreen from './GameOverScreen';
+import VirtualJoystick from './VirtualJoystick';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const ALL_UPGRADES: Omit<Upgrade, 'apply'>[] = [
   { id: 'damage', name: '+ Damage', description: 'Increase projectile damage by 5', icon: '⚔️' },
@@ -57,6 +59,12 @@ const GameCanvas = ({ onGameOver }: Props) => {
   const animRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const virtualInputRef = useRef({ dx: 0, dy: 0 });
+  const isMobile = useIsMobile();
+
+  const handleJoystickMove = useCallback((dx: number, dy: number) => {
+    virtualInputRef.current = { dx, dy };
+  }, []);
 
   const [hudData, setHudData] = useState({ hp: 100, maxHp: 100, xp: 0, xpToLevel: 20, level: 1, time: 0 });
   const [levelUpOptions, setLevelUpOptions] = useState<Upgrade[] | null>(null);
@@ -145,6 +153,12 @@ const GameCanvas = ({ onGameOver }: Props) => {
       if (k['s'] || k['S'] || k['ArrowDown']) dy += 1;
       if (k['a'] || k['A'] || k['ArrowLeft']) dx -= 1;
       if (k['d'] || k['D'] || k['ArrowRight']) dx += 1;
+      // Virtual joystick input
+      const vi = virtualInputRef.current;
+      if (vi.dx !== 0 || vi.dy !== 0) {
+        dx += vi.dx;
+        dy += vi.dy;
+      }
       if (dx !== 0 || dy !== 0) {
         const len = Math.hypot(dx, dy);
         dx /= len; dy /= len;
@@ -290,6 +304,9 @@ const GameCanvas = ({ onGameOver }: Props) => {
     <div ref={containerRef} className="relative w-full h-screen bg-game-bg overflow-hidden">
       <canvas ref={canvasRef} className="block w-full h-full" />
       <GameHUD {...hudData} />
+      {isMobile && !isGameOver && !levelUpOptions && (
+        <VirtualJoystick onMove={handleJoystickMove} />
+      )}
       {levelUpOptions && (
         <LevelUpModal
           upgrades={levelUpOptions}
