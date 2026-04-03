@@ -51,6 +51,7 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
 
 interface Props {
   onGameOver: (time: number) => void;
+  playerName: string;
 }
 
 const SPAWN_RADIUS = 500; // enemies spawn this far from the player
