@@ -385,6 +385,12 @@ function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: numb
     ctx.fill();
   }
 
+  // Player name
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(playerName, p.x, p.y - p.radius - 8);
+
   ctx.restore();
 }
 
