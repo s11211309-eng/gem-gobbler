@@ -272,7 +272,7 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
       });
 
       // --- RENDER ---
-      render(ctx, gs, W, H, timestamp);
+      render(ctx, gs, W, H, timestamp, playerName);
 
       // --- HUD update (throttled) ---
       hudCounter++;
