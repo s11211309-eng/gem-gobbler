@@ -304,6 +304,9 @@ const GameCanvas = ({ onGameOver }: Props) => {
     <div ref={containerRef} className="relative w-full h-screen bg-game-bg overflow-hidden">
       <canvas ref={canvasRef} className="block w-full h-full" />
       <GameHUD {...hudData} />
+      {isMobile && !isGameOver && !levelUpOptions && (
+        <VirtualJoystick onMove={handleJoystickMove} />
+      )}
       {levelUpOptions && (
         <LevelUpModal
           upgrades={levelUpOptions}
