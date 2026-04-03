@@ -57,7 +57,7 @@ interface Props {
 const SPAWN_RADIUS = 500; // enemies spawn this far from the player
 const DESPAWN_RADIUS = 800; // entities beyond this distance get cleaned up
 
-const GameCanvas = ({ onGameOver }: Props) => {
+const GameCanvas = ({ onGameOver, playerName }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const animRef = useRef<number>(0);
