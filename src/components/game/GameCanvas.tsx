@@ -7,11 +7,11 @@ import VirtualJoystick from './VirtualJoystick';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const ALL_UPGRADES: Omit<Upgrade, 'apply'>[] = [
-  { id: 'damage', name: '+ Damage', description: 'Increase projectile damage by 5', icon: '⚔️' },
-  { id: 'atkspeed', name: '+ Attack Speed', description: 'Decrease attack cooldown', icon: '⚡' },
-  { id: 'movespeed', name: '+ Move Speed', description: 'Increase movement speed', icon: '🏃' },
-  { id: 'maxhp', name: '+ Max HP', description: 'Increase max HP by 20 & fully heal', icon: '❤️' },
-  { id: 'projcount', name: '+ Projectile Amount', description: 'Shoot an extra projectile per attack', icon: '🔫' },
+  { id: 'damage', name: '+ 傷害', description: '增加 5 點投射物傷害', icon: '⚔️' },
+  { id: 'atkspeed', name: '+ 攻速', description: '減少攻擊冷卻時間', icon: '⚡' },
+  { id: 'movespeed', name: '+ 移速', description: '增加移動速度', icon: '🏃' },
+  { id: 'maxhp', name: '+ 血量上限', description: '增加 20 點血量上限並完全恢復', icon: '❤️' },
+  { id: 'projcount', name: '+ 投射物數量', description: '每次攻擊多射一顆投射物', icon: '🔫' },
 ];
 
 function applyUpgrade(id: string, state: GameState) {
@@ -25,10 +25,10 @@ function applyUpgrade(id: string, state: GameState) {
   }
 }
 
-function createInitialState(w: number, h: number): GameState {
+function createInitialState(): GameState {
   return {
     player: {
-      x: w / 2, y: h / 2, radius: 18,
+      x: 0, y: 0, radius: 18,
       hp: 100, maxHp: 100, speed: 3, xp: 0, xpToLevel: 20, level: 1,
       damage: 10, attackCooldown: 600, lastAttackTime: 0, projectileCount: 1,
       invincibleUntil: 0,
@@ -53,6 +53,9 @@ interface Props {
   onGameOver: (time: number) => void;
 }
 
+const SPAWN_RADIUS = 500; // enemies spawn this far from the player
+const DESPAWN_RADIUS = 800; // entities beyond this distance get cleaned up
+
 const GameCanvas = ({ onGameOver }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
@@ -72,10 +75,7 @@ const GameCanvas = ({ onGameOver }: Props) => {
   const [finalTime, setFinalTime] = useState(0);
 
   const initGame = useCallback(() => {
-    const canvas = canvasRef.current!;
-    const w = canvas.width;
-    const h = canvas.height;
-    stateRef.current = createInitialState(w, h);
+    stateRef.current = createInitialState();
     lastTimeRef.current = 0;
     setIsGameOver(false);
     setLevelUpOptions(null);
@@ -101,19 +101,12 @@ const GameCanvas = ({ onGameOver }: Props) => {
     const resize = () => {
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
-      if (stateRef.current) {
-        // clamp player
-        const p = stateRef.current.player;
-        p.x = Math.min(Math.max(p.radius, p.x), canvas.width - p.radius);
-        p.y = Math.min(Math.max(p.radius, p.y), canvas.height - p.radius);
-      }
     };
 
     resize();
     initGame();
     window.addEventListener('resize', resize);
 
-    // Key handlers
     const onKeyDown = (e: KeyboardEvent) => {
       if (stateRef.current) stateRef.current.keys[e.key] = true;
     };
@@ -132,28 +125,28 @@ const GameCanvas = ({ onGameOver }: Props) => {
       if (!gs.running) return;
 
       if (lastTimeRef.current === 0) lastTimeRef.current = timestamp;
-      const dt = Math.min(timestamp - lastTimeRef.current, 50); // cap delta
+      const dt = Math.min(timestamp - lastTimeRef.current, 50);
       lastTimeRef.current = timestamp;
 
+      const W = canvas.width;
+      const H = canvas.height;
+
       if (gs.paused || gs.gameOver) {
-        render(ctx, gs, canvas.width, canvas.height, timestamp);
+        render(ctx, gs, W, H, timestamp);
         return;
       }
 
       gs.gameTime += dt / 1000;
-      const W = canvas.width;
-      const H = canvas.height;
       const p = gs.player;
       const now = timestamp;
 
-      // --- MOVEMENT ---
+      // --- MOVEMENT (infinite world, no clamping) ---
       let dx = 0, dy = 0;
       const k = gs.keys;
       if (k['w'] || k['W'] || k['ArrowUp']) dy -= 1;
       if (k['s'] || k['S'] || k['ArrowDown']) dy += 1;
       if (k['a'] || k['A'] || k['ArrowLeft']) dx -= 1;
       if (k['d'] || k['D'] || k['ArrowRight']) dx += 1;
-      // Virtual joystick input
       const vi = virtualInputRef.current;
       if (vi.dx !== 0 || vi.dy !== 0) {
         dx += vi.dx;
@@ -165,23 +158,17 @@ const GameCanvas = ({ onGameOver }: Props) => {
         p.x += dx * p.speed * (dt / 16);
         p.y += dy * p.speed * (dt / 16);
       }
-      p.x = Math.max(p.radius, Math.min(W - p.radius, p.x));
-      p.y = Math.max(p.radius, Math.min(H - p.radius, p.y));
+      // No clamping — player moves freely in infinite space
 
-      // --- ENEMY SPAWN ---
+      // --- ENEMY SPAWN (around player) ---
       const difficultyMul = 1 + gs.gameTime / 30;
       const curSpawnInterval = Math.max(300, gs.spawnInterval / difficultyMul);
       if (now - gs.lastSpawnTime > curSpawnInterval) {
         gs.lastSpawnTime = now;
-        const side = Math.floor(Math.random() * 4);
-        let ex: number, ey: number;
-        const margin = 30;
-        switch (side) {
-          case 0: ex = Math.random() * W; ey = -margin; break;
-          case 1: ex = W + margin; ey = Math.random() * H; break;
-          case 2: ex = Math.random() * W; ey = H + margin; break;
-          default: ex = -margin; ey = Math.random() * H; break;
-        }
+        const angle = Math.random() * Math.PI * 2;
+        const spawnDist = SPAWN_RADIUS + Math.random() * 100;
+        const ex = p.x + Math.cos(angle) * spawnDist;
+        const ey = p.y + Math.sin(angle) * spawnDist;
         const enemyHp = Math.floor(15 + difficultyMul * 5);
         gs.enemies.push({ x: ex, y: ey, size: 20, hp: enemyHp, maxHp: enemyHp, speed: 1 + Math.random() * 0.5 });
       }
@@ -200,7 +187,6 @@ const GameCanvas = ({ onGameOver }: Props) => {
       // --- AUTO ATTACK ---
       if (now - p.lastAttackTime > p.attackCooldown && gs.enemies.length > 0) {
         p.lastAttackTime = now;
-        // sort enemies by distance, pick closest ones
         const sorted = [...gs.enemies].sort((a, b) => dist(p, a) - dist(p, b));
         for (let i = 0; i < p.projectileCount; i++) {
           const target = sorted[i % sorted.length];
@@ -223,8 +209,8 @@ const GameCanvas = ({ onGameOver }: Props) => {
         proj.x += proj.dx * (dt / 16);
         proj.y += proj.dy * (dt / 16);
       }
-      // Remove off-screen
-      gs.projectiles = gs.projectiles.filter(pr => pr.x > -50 && pr.x < W + 50 && pr.y > -50 && pr.y < H + 50);
+      // Remove projectiles too far from player
+      gs.projectiles = gs.projectiles.filter(pr => dist(p, pr) < DESPAWN_RADIUS);
 
       // --- COLLISIONS: projectile vs enemy ---
       const deadEnemies: Set<Enemy> = new Set();
@@ -245,6 +231,10 @@ const GameCanvas = ({ onGameOver }: Props) => {
       }
       gs.projectiles = gs.projectiles.filter(pr => !usedProjectiles.has(pr));
       gs.enemies = gs.enemies.filter(e => !deadEnemies.has(e));
+
+      // --- Despawn far-away enemies ---
+      gs.enemies = gs.enemies.filter(e => dist(p, e) < DESPAWN_RADIUS);
+      gs.xpGems = gs.xpGems.filter(gem => dist(p, gem) < DESPAWN_RADIUS);
 
       // --- COLLISIONS: enemy vs player ---
       for (const e of gs.enemies) {
@@ -320,21 +310,31 @@ const GameCanvas = ({ onGameOver }: Props) => {
 };
 
 function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number) {
+  const p = gs.player;
+  // Camera offset: player is always at center of screen
+  const camX = p.x - W / 2;
+  const camY = p.y - H / 2;
+
   // Clear
   ctx.fillStyle = '#0a0e17';
   ctx.fillRect(0, 0, W, H);
 
-  // Grid
+  // Grid (infinite, scrolling with camera)
   ctx.strokeStyle = 'rgba(255,255,255,0.03)';
   ctx.lineWidth = 1;
   const gridSize = 50;
-  for (let x = 0; x < W; x += gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
-  for (let y = 0; y < H; y += gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  const startX = -(camX % gridSize);
+  const startY = -(camY % gridSize);
+  for (let x = startX; x < W; x += gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = startY; y < H; y += gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+  // All world objects are drawn relative to camera
+  ctx.save();
+  ctx.translate(-camX, -camY);
 
   // XP Gems
   ctx.fillStyle = '#22c55e';
   for (const gem of gs.xpGems) {
-    ctx.beginPath();
     ctx.save();
     ctx.translate(gem.x, gem.y);
     ctx.rotate(Math.PI / 4);
@@ -358,7 +358,6 @@ function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: numb
     const half = e.size / 2;
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(e.x - half, e.y - half, e.size, e.size);
-    // HP bar
     if (e.hp < e.maxHp) {
       const barW = e.size;
       const barH = 3;
@@ -370,7 +369,6 @@ function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: numb
   }
 
   // Player
-  const p = gs.player;
   const flashing = now < p.invincibleUntil && Math.floor(now / 80) % 2 === 0;
   if (!flashing) {
     ctx.fillStyle = '#3b82f6';
@@ -380,12 +378,13 @@ function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: numb
     ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
-    // inner highlight
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.beginPath();
     ctx.arc(p.x - 4, p.y - 4, p.radius * 0.4, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  ctx.restore();
 }
 
 export default GameCanvas;

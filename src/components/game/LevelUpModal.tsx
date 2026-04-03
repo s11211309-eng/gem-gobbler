@@ -9,8 +9,8 @@ interface LevelUpModalProps {
 const LevelUpModal = ({ upgrades, onSelect, level }: LevelUpModalProps) => (
   <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-50">
     <div className="bg-game-panel border border-white/10 rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl">
-      <h2 className="text-2xl font-black text-game-accent text-center mb-1">LEVEL UP!</h2>
-      <p className="text-game-muted text-center text-sm mb-6">Level {level} — Choose an upgrade</p>
+      <h2 className="text-2xl font-black text-game-accent text-center mb-1">升級！</h2>
+      <p className="text-game-muted text-center text-sm mb-6">等級 {level} — 選擇一個升級</p>
       <div className="flex flex-col gap-3">
         {upgrades.map((u) => (
           <button

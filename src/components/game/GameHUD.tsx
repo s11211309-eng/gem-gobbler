@@ -15,11 +15,11 @@ const formatTime = (seconds: number) => {
 
 const GameHUD = ({ hp, maxHp, xp, xpToLevel, level, time }: GameHUDProps) => (
   <div className="absolute top-0 left-0 right-0 p-3 flex items-center gap-4 z-40 pointer-events-none">
-    {/* XP Bar */}
+    {/* 經驗值條 */}
     <div className="flex-1">
       <div className="flex justify-between text-xs text-game-muted mb-1">
-        <span>Lv {level}</span>
-        <span>{xp}/{xpToLevel} XP</span>
+        <span>等級 {level}</span>
+        <span>{xp}/{xpToLevel} 經驗值</span>
       </div>
       <div className="h-3 bg-black/50 rounded-full overflow-hidden border border-white/10">
         <div
@@ -29,10 +29,10 @@ const GameHUD = ({ hp, maxHp, xp, xpToLevel, level, time }: GameHUDProps) => (
       </div>
     </div>
 
-    {/* HP Bar */}
+    {/* 血量條 */}
     <div className="w-40">
       <div className="flex justify-between text-xs text-game-muted mb-1">
-        <span>HP</span>
+        <span>血量</span>
         <span>{hp}/{maxHp}</span>
       </div>
       <div className="h-3 bg-black/50 rounded-full overflow-hidden border border-white/10">
@@ -43,7 +43,7 @@ const GameHUD = ({ hp, maxHp, xp, xpToLevel, level, time }: GameHUDProps) => (
       </div>
     </div>
 
-    {/* Timer */}
+    {/* 計時器 */}
     <div className="text-foreground font-mono text-lg font-bold min-w-[60px] text-right">
       {formatTime(time)}
     </div>
