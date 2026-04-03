@@ -153,6 +153,12 @@ const GameCanvas = ({ onGameOver }: Props) => {
       if (k['s'] || k['S'] || k['ArrowDown']) dy += 1;
       if (k['a'] || k['A'] || k['ArrowLeft']) dx -= 1;
       if (k['d'] || k['D'] || k['ArrowRight']) dx += 1;
+      // Virtual joystick input
+      const vi = virtualInputRef.current;
+      if (vi.dx !== 0 || vi.dy !== 0) {
+        dx += vi.dx;
+        dy += vi.dy;
+      }
       if (dx !== 0 || dy !== 0) {
         const len = Math.hypot(dx, dy);
         dx /= len; dy /= len;
