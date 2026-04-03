@@ -72,7 +72,7 @@ const VirtualJoystick = ({ onMove }: Props) => {
   return (
     <div
       ref={baseRef}
-      className="absolute bottom-8 left-8 z-50 rounded-full border-2 border-white/20 bg-white/10 backdrop-blur-sm"
+      className="absolute bottom-8 right-8 z-50 rounded-full border-2 border-white/20 bg-white/10 backdrop-blur-sm"
       style={{ width: JOYSTICK_SIZE, height: JOYSTICK_SIZE, touchAction: 'none' }}
       onTouchStart={(e) => {
         const t = e.changedTouches[0];

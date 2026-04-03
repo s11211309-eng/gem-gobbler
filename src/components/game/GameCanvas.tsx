@@ -51,12 +51,13 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
 
 interface Props {
   onGameOver: (time: number) => void;
+  playerName: string;
 }
 
 const SPAWN_RADIUS = 500; // enemies spawn this far from the player
 const DESPAWN_RADIUS = 800; // entities beyond this distance get cleaned up
 
-const GameCanvas = ({ onGameOver }: Props) => {
+const GameCanvas = ({ onGameOver, playerName }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const animRef = useRef<number>(0);
@@ -132,7 +133,7 @@ const GameCanvas = ({ onGameOver }: Props) => {
       const H = canvas.height;
 
       if (gs.paused || gs.gameOver) {
-        render(ctx, gs, W, H, timestamp);
+        render(ctx, gs, W, H, timestamp, playerName);
         return;
       }
 
@@ -271,7 +272,7 @@ const GameCanvas = ({ onGameOver }: Props) => {
       });
 
       // --- RENDER ---
-      render(ctx, gs, W, H, timestamp);
+      render(ctx, gs, W, H, timestamp, playerName);
 
       // --- HUD update (throttled) ---
       hudCounter++;
@@ -309,7 +310,7 @@ const GameCanvas = ({ onGameOver }: Props) => {
   );
 };
 
-function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number) {
+function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number, playerName: string) {
   const p = gs.player;
   // Camera offset: player is always at center of screen
   const camX = p.x - W / 2;
@@ -383,6 +384,12 @@ function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: numb
     ctx.arc(p.x - 4, p.y - 4, p.radius * 0.4, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  // Player name
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = 'bold 12px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(playerName, p.x, p.y - p.radius - 8);
 
   ctx.restore();
 }
