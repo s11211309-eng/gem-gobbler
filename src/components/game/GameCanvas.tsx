@@ -157,7 +157,7 @@ const GameCanvas = ({ onGameOver, onQuit, playerName, playerColor, inputMode }: 
       const H = canvas.height;
 
       if (gs.paused || gs.gameOver) {
-        render(ctx, gs, W, H, timestamp, playerName);
+        render(ctx, gs, W, H, timestamp, playerName, playerColor);
         return;
       }
 
