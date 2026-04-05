@@ -95,8 +95,29 @@ const GameCanvas = ({ onGameOver, onQuit, playerName, playerColor, inputMode }: 
   }, []);
 
   const handleRestart = useCallback(() => {
+    setMenuOpen(false);
     initGame();
   }, [initGame]);
+
+  const handlePause = useCallback(() => {
+    if (stateRef.current && !stateRef.current.gameOver && !stateRef.current.levelUp) {
+      stateRef.current.paused = true;
+      setMenuOpen(true);
+    }
+  }, []);
+
+  const handleResume = useCallback(() => {
+    if (stateRef.current) {
+      stateRef.current.paused = false;
+      setMenuOpen(false);
+    }
+  }, []);
+
+  const handleQuit = useCallback(() => {
+    if (stateRef.current) stateRef.current.running = false;
+    setMenuOpen(false);
+    onQuit();
+  }, [onQuit]);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -275,7 +296,7 @@ const GameCanvas = ({ onGameOver, onQuit, playerName, playerColor, inputMode }: 
       });
 
       // --- RENDER ---
-      render(ctx, gs, W, H, timestamp, playerName);
+      render(ctx, gs, W, H, timestamp, playerName, playerColor);
 
       // --- HUD update (throttled) ---
       hudCounter++;
@@ -298,8 +319,14 @@ const GameCanvas = ({ onGameOver, onQuit, playerName, playerColor, inputMode }: 
     <div ref={containerRef} className="relative w-full h-screen bg-game-bg overflow-hidden">
       <canvas ref={canvasRef} className="block w-full h-full" />
       <GameHUD {...hudData} />
-      {isMobile && !isGameOver && !levelUpOptions && (
+      {!isGameOver && !levelUpOptions && !menuOpen && (
+        <PauseButton onClick={handlePause} />
+      )}
+      {inputMode === 'tablet' && !isGameOver && !levelUpOptions && !menuOpen && (
         <VirtualJoystick onMove={handleJoystickMove} />
+      )}
+      {menuOpen && (
+        <PauseMenu onResume={handleResume} onRestart={handleRestart} onQuit={handleQuit} />
       )}
       {levelUpOptions && (
         <LevelUpModal
