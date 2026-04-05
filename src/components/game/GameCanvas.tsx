@@ -340,7 +340,7 @@ const GameCanvas = ({ onGameOver, onQuit, playerName, playerColor, inputMode }: 
   );
 };
 
-function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number, playerName: string) {
+function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number, playerName: string, playerColor: string) {
   const p = gs.player;
   // Camera offset: player is always at center of screen
   const camX = p.x - W / 2;
@@ -402,16 +402,28 @@ function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: numb
   // Player
   const flashing = now < p.invincibleUntil && Math.floor(now / 80) % 2 === 0;
   if (!flashing) {
-    ctx.fillStyle = '#3b82f6';
-    ctx.shadowColor = '#3b82f6';
+    ctx.fillStyle = playerColor;
+    ctx.shadowColor = playerColor;
     ctx.shadowBlur = 15;
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+    // Eyes
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(p.x - 6, p.y - 2, 3, 0, Math.PI * 2);
+    ctx.arc(p.x + 6, p.y - 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(p.x - 5, p.y - 2, 1.5, 0, Math.PI * 2);
+    ctx.arc(p.x + 7, p.y - 2, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Highlight
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.beginPath();
-    ctx.arc(p.x - 4, p.y - 4, p.radius * 0.4, 0, Math.PI * 2);
+    ctx.arc(p.x - 4, p.y - 6, p.radius * 0.35, 0, Math.PI * 2);
     ctx.fill();
   }
 
