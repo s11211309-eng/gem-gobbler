@@ -4,7 +4,7 @@ import GameHUD from './GameHUD';
 import LevelUpModal from './LevelUpModal';
 import GameOverScreen from './GameOverScreen';
 import VirtualJoystick from './VirtualJoystick';
-import { useIsMobile } from '@/hooks/use-mobile';
+import PauseMenu, { PauseButton } from './PauseMenu';
 
 const ALL_UPGRADES: Omit<Upgrade, 'apply'>[] = [
   { id: 'damage', name: '+ 傷害', description: '增加 5 點投射物傷害', icon: '⚔️' },
@@ -51,20 +51,23 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
 
 interface Props {
   onGameOver: (time: number) => void;
+  onQuit: () => void;
   playerName: string;
+  playerColor: string;
+  inputMode: 'pc' | 'tablet';
 }
 
 const SPAWN_RADIUS = 500; // enemies spawn this far from the player
 const DESPAWN_RADIUS = 800; // entities beyond this distance get cleaned up
 
-const GameCanvas = ({ onGameOver, playerName }: Props) => {
+const GameCanvas = ({ onGameOver, onQuit, playerName, playerColor, inputMode }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const animRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const virtualInputRef = useRef({ dx: 0, dy: 0 });
-  const isMobile = useIsMobile();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleJoystickMove = useCallback((dx: number, dy: number) => {
     virtualInputRef.current = { dx, dy };
