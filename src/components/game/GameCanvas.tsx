@@ -4,7 +4,7 @@ import GameHUD from './GameHUD';
 import LevelUpModal from './LevelUpModal';
 import GameOverScreen from './GameOverScreen';
 import VirtualJoystick from './VirtualJoystick';
-import { useIsMobile } from '@/hooks/use-mobile';
+import PauseMenu, { PauseButton } from './PauseMenu';
 
 const ALL_UPGRADES: Omit<Upgrade, 'apply'>[] = [
   { id: 'damage', name: '+ 傷害', description: '增加 5 點投射物傷害', icon: '⚔️' },
@@ -51,20 +51,23 @@ function dist(a: { x: number; y: number }, b: { x: number; y: number }) {
 
 interface Props {
   onGameOver: (time: number) => void;
+  onQuit: () => void;
   playerName: string;
+  playerColor: string;
+  inputMode: 'pc' | 'tablet';
 }
 
 const SPAWN_RADIUS = 500; // enemies spawn this far from the player
 const DESPAWN_RADIUS = 800; // entities beyond this distance get cleaned up
 
-const GameCanvas = ({ onGameOver, playerName }: Props) => {
+const GameCanvas = ({ onGameOver, onQuit, playerName, playerColor, inputMode }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const stateRef = useRef<GameState | null>(null);
   const animRef = useRef<number>(0);
   const lastTimeRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const virtualInputRef = useRef({ dx: 0, dy: 0 });
-  const isMobile = useIsMobile();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleJoystickMove = useCallback((dx: number, dy: number) => {
     virtualInputRef.current = { dx, dy };
@@ -92,8 +95,29 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
   }, []);
 
   const handleRestart = useCallback(() => {
+    setMenuOpen(false);
     initGame();
   }, [initGame]);
+
+  const handlePause = useCallback(() => {
+    if (stateRef.current && !stateRef.current.gameOver && !stateRef.current.levelUp) {
+      stateRef.current.paused = true;
+      setMenuOpen(true);
+    }
+  }, []);
+
+  const handleResume = useCallback(() => {
+    if (stateRef.current) {
+      stateRef.current.paused = false;
+      setMenuOpen(false);
+    }
+  }, []);
+
+  const handleQuit = useCallback(() => {
+    if (stateRef.current) stateRef.current.running = false;
+    setMenuOpen(false);
+    onQuit();
+  }, [onQuit]);
 
   useEffect(() => {
     const canvas = canvasRef.current!;
@@ -133,7 +157,7 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
       const H = canvas.height;
 
       if (gs.paused || gs.gameOver) {
-        render(ctx, gs, W, H, timestamp, playerName);
+        render(ctx, gs, W, H, timestamp, playerName, playerColor);
         return;
       }
 
@@ -272,7 +296,7 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
       });
 
       // --- RENDER ---
-      render(ctx, gs, W, H, timestamp, playerName);
+      render(ctx, gs, W, H, timestamp, playerName, playerColor);
 
       // --- HUD update (throttled) ---
       hudCounter++;
@@ -295,8 +319,14 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
     <div ref={containerRef} className="relative w-full h-screen bg-game-bg overflow-hidden">
       <canvas ref={canvasRef} className="block w-full h-full" />
       <GameHUD {...hudData} />
-      {isMobile && !isGameOver && !levelUpOptions && (
+      {!isGameOver && !levelUpOptions && !menuOpen && (
+        <PauseButton onClick={handlePause} />
+      )}
+      {inputMode === 'tablet' && !isGameOver && !levelUpOptions && !menuOpen && (
         <VirtualJoystick onMove={handleJoystickMove} />
+      )}
+      {menuOpen && (
+        <PauseMenu onResume={handleResume} onRestart={handleRestart} onQuit={handleQuit} />
       )}
       {levelUpOptions && (
         <LevelUpModal
@@ -310,7 +340,7 @@ const GameCanvas = ({ onGameOver, playerName }: Props) => {
   );
 };
 
-function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number, playerName: string) {
+function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: number, now: number, playerName: string, playerColor: string) {
   const p = gs.player;
   // Camera offset: player is always at center of screen
   const camX = p.x - W / 2;
@@ -372,16 +402,28 @@ function render(ctx: CanvasRenderingContext2D, gs: GameState, W: number, H: numb
   // Player
   const flashing = now < p.invincibleUntil && Math.floor(now / 80) % 2 === 0;
   if (!flashing) {
-    ctx.fillStyle = '#3b82f6';
-    ctx.shadowColor = '#3b82f6';
+    ctx.fillStyle = playerColor;
+    ctx.shadowColor = playerColor;
     ctx.shadowBlur = 15;
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
     ctx.fill();
     ctx.shadowBlur = 0;
+    // Eyes
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(p.x - 6, p.y - 2, 3, 0, Math.PI * 2);
+    ctx.arc(p.x + 6, p.y - 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath();
+    ctx.arc(p.x - 5, p.y - 2, 1.5, 0, Math.PI * 2);
+    ctx.arc(p.x + 7, p.y - 2, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Highlight
     ctx.fillStyle = 'rgba(255,255,255,0.25)';
     ctx.beginPath();
-    ctx.arc(p.x - 4, p.y - 4, p.radius * 0.4, 0, Math.PI * 2);
+    ctx.arc(p.x - 4, p.y - 6, p.radius * 0.35, 0, Math.PI * 2);
     ctx.fill();
   }
 
