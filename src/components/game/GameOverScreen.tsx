@@ -1,6 +1,7 @@
 interface GameOverScreenProps {
   time: number;
   onRestart: () => void;
+  enemiesKilled?: number;
 }
 
 const formatTime = (seconds: number) => {
@@ -9,11 +10,14 @@ const formatTime = (seconds: number) => {
   return `${m}:${s}`;
 };
 
-const GameOverScreen = ({ time, onRestart }: GameOverScreenProps) => (
+const GameOverScreen = ({ time, onRestart, enemiesKilled }: GameOverScreenProps) => (
   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 z-50">
     <h1 className="text-5xl font-black text-game-enemy mb-4">遊戲結束</h1>
     <p className="text-game-muted text-lg mb-2">存活時間</p>
-    <p className="text-4xl font-bold text-foreground mb-10 font-mono">{formatTime(time)}</p>
+    <p className="text-4xl font-bold text-foreground mb-4 font-mono">{formatTime(time)}</p>
+    {enemiesKilled !== undefined && (
+      <p className="text-game-muted text-lg mb-8">消滅敵人：{enemiesKilled}</p>
+    )}
     <button
       onClick={onRestart}
       className="px-10 py-3 bg-game-accent text-game-bg font-bold text-lg rounded-lg hover:brightness-110 transition-all hover:scale-105 active:scale-95"

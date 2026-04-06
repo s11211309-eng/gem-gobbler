@@ -27,6 +27,8 @@ export interface Enemy {
   hp: number;
   maxHp: number;
   speed: number;
+  isBoss?: boolean;
+  bossType?: string;
 }
 
 export interface Projectile {
@@ -46,6 +48,16 @@ export interface XpGem {
   value: number;
 }
 
+export interface GameStats {
+  enemiesKilled: number;
+  xpCollected: number;
+  damageDealt: number;
+  damageTaken: number;
+  upgradesChosen: string[];
+  noHitTime: number;
+  lastHitTime: number;
+}
+
 export interface GameState {
   player: Player;
   enemies: Enemy[];
@@ -59,6 +71,12 @@ export interface GameState {
   paused: boolean;
   gameOver: boolean;
   levelUp: boolean;
+  gameMode: 'infinite' | 'stage';
+  currentStage: number;
+  stageEnemiesRemaining: number;
+  bossSpawned: boolean;
+  bossDefeated: boolean;
+  stats: GameStats;
 }
 
 export interface Upgrade {

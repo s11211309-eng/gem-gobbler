@@ -14,7 +14,143 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      daily_task_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          id: string
+          task_date: string
+          task_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          task_date?: string
+          task_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          id?: string
+          task_date?: string
+          task_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_task_progress_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "daily_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_tasks: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          target_value: number
+          task_category: string
+          task_type: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          target_value?: number
+          task_category?: string
+          task_type: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          target_value?: number
+          task_category?: string
+          task_type?: string
+          title?: string
+        }
+        Relationships: []
+      }
+      game_records: {
+        Row: {
+          created_at: string
+          enemies_killed: number
+          game_mode: string
+          id: string
+          score: number
+          stage_reached: number
+          survival_time: number
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          created_at?: string
+          enemies_killed?: number
+          game_mode?: string
+          id?: string
+          score?: number
+          stage_reached?: number
+          survival_time?: number
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          created_at?: string
+          enemies_killed?: number
+          game_mode?: string
+          id?: string
+          score?: number
+          stage_reached?: number
+          survival_time?: number
+          user_id?: string
+          xp_earned?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_color: string
+          created_at: string
+          display_name: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_color?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_color?: string
+          created_at?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
